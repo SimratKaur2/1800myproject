@@ -97,7 +97,7 @@ function writeHikes() {
         last_updated: firebase.firestore.Timestamp.fromDate(new Date("March 10, 2022"))
    });
 }
-writeHikes();
+// writeHikes();
 
 //-----------------------------------------------
 // Create a "max" number of hike document objects
@@ -146,4 +146,30 @@ function displayCards(collection) {
         })
 }
 
-displayCards("hikes");
+//displayCards("hikes");
+
+function populateCardsDynamically() {
+    let hikeCardTemplate = document.getElementById("hikeCardTemplate");
+    let hikeCardGroup = document.getElementById("hikeCardGroup");
+    
+    db.collection("hikes").get()
+        .then(allHikes => {
+            allHikes.forEach(doc => {
+                var hikeName = doc.data().name; //gets the name field
+                var hikeID = doc.data().code; //gets the unique CODE field
+                var hikeLength = doc.data().length; //gets the length field
+                let testHikeCard = hikeCardTemplate.content.cloneNode(true);
+                testHikeCard.querySelector('.card-title').innerHTML = hikeName;     //equiv getElementByClassName
+                testHikeCard.querySelector('.card-length').innerHTML = hikeLength;  //equiv getElementByClassName
+                testHikeCard.querySelector('a').onclick = () => setHikeData(hikeID);//equiv getElementByTagName
+                testHikeCard.querySelector('img').src = `./images/${hikeID}.jpg`;   //equiv getElementByTagName
+                hikeCardGroup.appendChild(testHikeCard);
+            })
+
+        })
+}
+populateCardsDynamically();
+
+function setHikeData(id) {
+    localStorage.setItem('hikeID', id);
+}
