@@ -45,6 +45,10 @@ The arrow notation (=>) is a shorthand syntax for defining anonymous functions i
 In this case, it is being used to define a function that will be passed as an argument
 to the onSnapshot method.
 */
+
+//Change the Tuesday quote in your Firestore (in the console) and see your HTML updates accordingly!  
+//The function .onSnapshot() is a real-time listener!
+
 function readQuote() {
     db.collection("quotes").doc("Tuesday")                                                      //name of the collection and documents should matach excatly with what you have in Firestore
       .onSnapshot(somedoc => {                                                               //arrow notation
@@ -57,3 +61,89 @@ function readQuote() {
       })
 }
 readQuote();        //calling the function
+
+function writeHikes() {
+    //define a variable for the collection you want to create in Firestore to populate data
+    var hikesRef = db.collection("hikes");
+
+    hikesRef.add({
+                      code:"BBY01",
+        name: "Burnaby Lake Park Trail",    //replace with your own city?
+        city: "Burnaby",
+        province: "BC",
+        level: "easy",
+        length: "10",
+        details: "Elmo goes here regularly",
+        last_updated: firebase.firestore.FieldValue.serverTimestamp()  
+    });
+    hikesRef.add({
+                      code:"AM01",
+        name: "Buntzen Lake Trail Trail",    //replace with your own city?
+        city: "Anmore",
+        province: "BC",
+        level: "moderate",
+        length: "10.5",
+        details: "Elmo goes here regularly",
+        last_updated: firebase.firestore.FieldValue.serverTimestamp()
+   });
+   hikesRef.add({
+                      code:"NV01",
+        name: "Mount Seymoure Trail",    //replace with your own city?
+        city: "North Vancouver",
+        province: "BC",
+        level: "hard",
+        length: "8.2",
+        details: "Elmo goes here regularly",
+        last_updated: firebase.firestore.Timestamp.fromDate(new Date("March 10, 2022"))
+   });
+}
+writeHikes();
+
+//-----------------------------------------------
+// Create a "max" number of hike document objects
+//-----------------------------------------------
+function writeHikeData() {
+    max = 21;
+    //define a variable for the collection you want to create in Firestore to populate data
+    var hikesRef = db.collection("hikes");
+    for (i = 1; i <= max; i++) {
+        hikesRef.add({ //add to database, autogen ID
+            name: "hike" + i,
+            details: "Elmo says this hike is amazing!  You will love going on hike" + i,
+            last_updated: firebase.firestore.FieldValue.serverTimestamp()
+        })
+   }
+}
+
+// writeHikeData();
+
+function displayCards(collection) {
+    let cardTemplate = document.getElementById("hikeCardTemplate");
+
+    db.collection(collection).get()
+        .then(snap => {
+            //var i = 1;  //if you want to use commented out section
+            snap.forEach(doc => { //iterate thru each doc
+                var title = doc.data().name;        // get value of the "name" key
+                var details = doc.data().details;   // get value of the "details" key
+								var hikeID = doc.data().code;    //get unique ID to each hike to be used for fetching right image
+                let newcard = cardTemplate.content.cloneNode(true);
+
+                //update title and text and image
+                newcard.querySelector('.card-title').innerHTML = title;
+                newcard.querySelector('.card-text').innerHTML = details;
+                newcard.querySelector('.card-image').src = `./images/${hikeID}.jpg`; //Example: NV01.jpg
+
+                //give unique ids to all elements for future use
+                // newcard.querySelector('.card-title').setAttribute("id", "ctitle" + i);
+                // newcard.querySelector('.card-text').setAttribute("id", "ctext" + i);
+                // newcard.querySelector('.card-image').setAttribute("id", "cimage" + i);
+
+                //attach to gallery
+                document.getElementById(collection + "-go-here").appendChild(newcard);
+                //i++;   //if you want to use commented out section
+            })
+        })
+}
+
+displayCards("hikes");
