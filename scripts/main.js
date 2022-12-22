@@ -227,6 +227,8 @@ function populateCardsDynamically() {
                     var bookmarks = userDoc.data().bookmarks;
                     if (bookmarks.includes(hikeID)) {
                       document.getElementById('save-' + hikeID).innerText = 'bookmark';
+                    } else {
+                        console.log("no data")
                     }
              })
 
@@ -263,19 +265,61 @@ can change the icon from “`bookmark_border`” (name of the hollow bookmark fr
 material design) to “`bookmark`” (name of the solid bookmark from material design).
 */
 function saveBookmark(hikeID) {
-    currentUser.set({
-            bookmarks: firebase.firestore.FieldValue.arrayUnion(hikeID)
-        }, {
-            merge: true
-        })
-        .then(function () {
-            console.log("bookmark has been saved for: " + currentUser);
-            var iconID = 'save-' + hikeID;
-            //console.log(iconID);
-			//this is to change the icon of the hike that was saved to "filled"
-            document.getElementById(iconID).innerText = 'bookmark';
-        });
+    // get the bookmark for the current user from the Firestore 
+    // database.
+    currentUser.get().then(function(doc){
+        //check if the hike is already bookmarked.
+        if(doc.data().bookmarks.includes(hikeID)) {
+            currentUser.set({
+                bookmarks: firebase.firestore.FieldValue.arrayRemove(hikeID)
+            }, {
+                merge: true
+            })
+            .then(function () {
+                console.log("bookmark has been removed for:" + currentUser)
+                var iconID = 'save-' + hikeID
+                //console.log(iconID)
+                //updating the icon to reflect the removed bookmark
+                document.getElementById(iconID).innerText = 'bookmark_border'
+            })
+        } else {
+            //the hike is not bookmarked, so add the bookmark
+            currentUser.set({
+                bookmarks: firebase.firestore.FieldValue.arrayUnion(hikeID)
+            }, {
+                merge: true
+            })
+            .then(function () {
+                console.log("bookmark has been saved for: " + currentUser);
+                var iconID = 'save-' + hikeID;
+                //console.log(iconID);
+                // Update the icon to reflect the added bookmark
+                document.getElementById(iconID).innerText = 'bookmark';
+            })
+        }
+    })
+
 }
+
+//-----------------------------------------------------------------------------
+// This function is called whenever the user clicks on the "bookmark" icon.
+// It adds the hike to the "bookmarks" array
+// Then it will change the bookmark icon from the hollow to the solid version. 
+//-----------------------------------------------------------------------------
+// function saveBookmark(hikeID) {
+//     currentUser.set({
+//             bookmarks: firebase.firestore.FieldValue.arrayUnion(hikeID)
+//         }, {
+//             merge: true
+//         })
+//         .then(function () {
+//             console.log("bookmark has been saved for: " + currentUser);
+//             var iconID = 'save-' + hikeID;
+//             //console.log(iconID);
+// 						//this is to change the icon of the hike that was saved to "filled"
+//             document.getElementById(iconID).innerText = 'bookmark';
+//         });
+// }
 
 function removeBookmark(hikeID) {
     currentUser.set({
